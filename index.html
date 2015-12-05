@@ -1,0 +1,16 @@
+<html><head><script src="remez.js"></script></head><body>
+  <h2> Remez algorithm </h2>
+
+  <form method="post"> 
+    Interval Start:<input type = "text" value = "0" name = "iStart" size = "5"><br/>
+    Interval End: <input type = "text" value = "1" name = "iEnd" size = "5"> <br/>
+    Degrees: <input type = "text" value = "2" name = "Degrees" size = "5"> <br/>
+    Function: <input type = "text" name = "Expr" size = "70" value = "pow(x,2.2)"><br\>
+    <br/>
+    <input type = "button" value = "Compute" onclick = "CalculateFormRemez(this.form)"><br/>
+    <textarea name = "Output" rows = "7" cols = "50"> </textarea> <br/>
+    Max Absolute Error: <input type = "text" name = "AbsErr" size = "20" value = ""><br/>
+  </form>
+
+  <canvas id="mainCanvas" width=400 height=200></canvas>
+</body></html>
