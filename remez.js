@@ -35,7 +35,6 @@ function GetRemezPoints(evalFunc, intervalStart, intervalEnd, degrees){
         let fp = evalFunc(p);
         points.push([p, fp]);
     }
-    console.log(points);
     return points;
 }
 
@@ -191,13 +190,47 @@ var remezPolynomial = function (points, origFunc) {
     return coeffs;
 };
 
+function PaintAbsError(canvas, intervalS, intervalE, origF, approxF){
+    var ctx = canvas.getContext('2d');
+
+    let pointCnt = canvas.width;
+    let points = new Array(pointCnt);
+    let maxErr = Number.MIN_VALUE;
+
+    for(let i=0; i<pointCnt;i++){
+        let x = intervalS + i/(pointCnt-1) * (intervalE-intervalS);
+        let y0 = origF(x);
+        let y1 = approxF(x);
+        let err = Math.abs(y1 - y0);
+        maxErr = Math.max(maxErr, err);
+        points[i] = err;
+    }
+
+    maxErr *= 1.1;
+
+    // Map points to canvas coords
+    for(let i=0;i<pointCnt;i++){
+        points[i] = points[i] / maxErr  * canvas.height;
+    }
+
+    ctx.fillStyle = "#eee";
+    ctx.fillRect(0,0,canvas.width, canvas.height);
+
+    ctx.strokeStyle = "#0F0";
+    ctx.beginPath();
+    for(let i=0;i<pointCnt;i++){
+        ctx.lineTo(i, canvas.height - points[i]);
+    }
+    ctx.stroke();
+}
+
 function PaintFunctions(canvas, intervalS, intervalE, origF, approxF){
     var ctx = canvas.getContext('2d');
 
     let pointCnt = canvas.width;
     let points = new Array(pointCnt);
     let minY = Number.MAX_VALUE;
-    let maxY = Number.MIN_VALUE;
+    let maxY = -Number.MAX_VALUE;
 
     for(let i=0; i<pointCnt;i++){
         let x = intervalS + i/(pointCnt-1) * (intervalE-intervalS);
@@ -254,36 +287,83 @@ function CalculateErrorValues(form, start, end, f1, f2){
     let iters = 50000; 
     for(let i=0;i<iters ;i++){
         let x = start + (end-start) * i / (iters-1);
-        let v1 = f1(x);
-        let v2 = f2(x);
-        let err = Math.abs(v1 - v2);
-        let relErr = Math.abs(v1/v2);
-        if(relErr < 1.0){
-            relErr = Math.abs(v2/v1);
-        }
+        let err = Math.abs(f1(x) - f2(x));
         maxErr = Math.max(maxErr, err);
-        if(Number.isFinite(relErr)){
-            maxRelErr = Math.max(maxRelErr, relErr);
-        }
     }
-
     form.AbsErr.value = maxErr;
-    //form.RelErr.value = maxRelErr;
 }
 
-function CalculateFormRemez(form){
+function GetCoeffs(){
+    let Result = [];
+    let elems = document.getElementsByClassName("coefficient");
+    for(let i=0;i<elems.length;i++){
+        let v = elems[i].value;
+        if(v == ""){
+            v= '0';
+        }
+        let f = parseFloat(v)
+        Result.push(f);
+    }
+    return Result;
+}
+
+function RedrawAll(){
+    let form = document.forms[0];
+    let start = parseFloat(form.iStart.value);
+    let end = parseFloat(form.iEnd.value);
+    let expr = form.Expr.value;
+
+    var evalFunc = EvaluateInScope(expr);
+
+    let Coeffs = GetCoeffs();
+    form.Output.value = polynomialToCode(Coeffs);
+
+    let ResultFunc = polynomialToFunc(Coeffs);
+    let canvas= document.getElementById("mainCanvas");
+    PaintFunctions(canvas, start, end, evalFunc, ResultFunc);
+    let errCanvas = document.getElementById("errCanvas");
+    PaintAbsError(errCanvas, start, end, evalFunc, ResultFunc);
+    CalculateErrorValues(form, start, end, evalFunc, ResultFunc);
+}
+
+function DegreesChanged(newValue){
+    let CoeffsDiv = document.getElementById("Coefficients");
+    CoeffsDiv.innerHTML = '';
+    for(let i=0;i<=newValue;i++){
+        let l = document.createElement("label");
+        l.innerHTML = "<br/>Degree " + i + "&nbsp;";
+        CoeffsDiv.appendChild(l);
+
+        let d = document.createElement("input");
+        d.type = "text";
+        d.id = "Coeff_" + i;
+        d.className = "coefficient";
+        d.oninput = RedrawAll;
+        CoeffsDiv.appendChild(d);
+    }
+}
+
+
+function CalculateFormRemez(){
+    let form = document.forms[0];
     let start = parseFloat(form.iStart.value);
     let end = parseFloat(form.iEnd.value);
     let degrees = parseInt(form.Degrees.value);
     let expr = form.Expr.value;
     
+    DegreesChanged(degrees);
     var evalFunc = EvaluateInScope(expr);
 
     let ResultCoeffs = remezPolynomial(GetRemezPoints(evalFunc, start, end, degrees), evalFunc);
-    let ResultFunc = polynomialToFunc(ResultCoeffs);
-    form.Output.value = polynomialToCode(ResultCoeffs);
-    let canvas= document.getElementById("mainCanvas");
-    console.log(canvas);
-    PaintFunctions(canvas, start, end, evalFunc, ResultFunc);
-    CalculateErrorValues(form, start, end, evalFunc, ResultFunc);
+    // Display coefficients in form
+    for(let i=0;i<ResultCoeffs.length;i++){
+        let t = document.getElementById("Coeff_" + i);
+        t.value = ResultCoeffs[i];
+    }
+    RedrawAll();
+}
+
+window.onload = function(){
+    DegreesChanged(parseInt(document.forms[0].Degrees.value) + 1);
+    document.getElementById("CalculateButton").click();
 }
