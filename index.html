@@ -5,10 +5,11 @@
     Interval Start:<input type = "text" value = "0" name = "iStart" size = "5" oninput="CalculateFormRemez()"><br/>
     Interval End: <input type = "text" value = "1" name = "iEnd" size = "5" oninput="CalculateFormRemez()"> <br/>
     Degrees: <input type = "text" value = "2" name = "Degrees" size = "5" oninput="CalculateFormRemez()"><br/>
-    Function: <input type = "text" name = "Expr" size = "70" value = "pow(x,2.2)" oninput="CalculateFormRemez()" ><br\>
+    Function: <input type = "text" name = "Expr" size = "70" value = "x==0?1:sin(x)/x" oninput="CalculateFormRemez()" ><br\>
     <br/><br/>
     <input id="CalculateButton" type="button" value="Recompute" onclick="CalculateFormRemez()"><br/>
     <h3>Coefficients</h3>
+    <h3 style="color:red;" id="warning"> </h3>
     <p><i>Note: You can directly modify these values to see how it affects the polynomial</i></p>
     <div id="Coefficients" style="margin-left:2em">
         ...

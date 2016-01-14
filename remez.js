@@ -29,18 +29,18 @@ function EvaluateInScope(codeText){
 
 function GetRemezPoints(evalFunc, intervalStart, intervalEnd, degrees){
     var points = [];
-    for (let i = 0; i < degrees + 2; i++) {
+    for (var i = 0; i < degrees + 2; i++) {
         // Find the Chevishev nodes and map them to our interval
-        let p = (intervalStart + intervalEnd + (intervalEnd - intervalStart) * Math.cos(Math.PI * i / (degrees+1))) / 2;
-        let fp = evalFunc(p);
+        var p = (intervalStart + intervalEnd + (intervalEnd - intervalStart) * Math.cos(Math.PI * i / (degrees+1))) / 2;
+        var fp = evalFunc(p);
         points.push([p, fp]);
     }
     return points;
 }
 
 function range(n){
-    let Result = new Array(n);
-    for(let i=0;i<n;i++){
+    var Result = new Array(n);
+    for(var i=0;i<n;i++){
         Result[i] = i;
     }
     return Result;
@@ -54,12 +54,12 @@ function range(n){
  * @returns {Array}
  */
 var gauss = function (matrix, freeTerm) {
-  let n = freeTerm.length,
+  var n = freeTerm.length,
     resX = new Array(n);
 
   var swap = function (x, y) {
-    let tmp = 0;
-    for (let i = 0; i < n; i++) {
+    var tmp = 0;
+    for (var i = 0; i < n; i++) {
       tmp = matrix[x][i];
       matrix[x][i] = matrix[y][i];
       matrix[y][i] = tmp;
@@ -70,17 +70,17 @@ var gauss = function (matrix, freeTerm) {
   };
 
   // Straight course
-  for (let i = 0; i < n - 1; i++) {
+  for (var i = 0; i < n - 1; i++) {
     if (matrix[i][i] === 0) {
-      for (let j = i + 1; j < n && matrix[i][i] === 0; j++) {
+      for (var j = i + 1; j < n && matrix[i][i] === 0; j++) {
         if (matrix[j][i] !== 0) {
           swap(i, j);
         }
       }
     }
-    for (let j = i + 1; j < n; j++) {
-      let coef = matrix[j][i] / matrix[i][i];
-      for (let k = i; k < n; k++) {
+    for (var j = i + 1; j < n; j++) {
+      var coef = matrix[j][i] / matrix[i][i];
+      for (var k = i; k < n; k++) {
         matrix[j][k] -= matrix[i][k] * coef;
       }
       freeTerm[j] -= freeTerm[i] * coef;
@@ -89,9 +89,9 @@ var gauss = function (matrix, freeTerm) {
 
   // Reverse course
   resX[n - 1] = freeTerm[n - 1] / matrix[n - 1][n - 1];
-  for (let i = n - 2; i >= 0; i--) {
+  for (var i = n - 2; i >= 0; i--) {
     resX[i] = 0.0;
-    for (let j = i + 1; j < n; j++) {
+    for (var j = i + 1; j < n; j++) {
       resX[i] += matrix[i][j] * resX[j];
     }
     resX[i] = (freeTerm[i] - resX[i]) / matrix[i][i];
@@ -100,19 +100,19 @@ var gauss = function (matrix, freeTerm) {
   return resX;
 };
 
-var polynomialToFunc = function(coeffs) {
+function polynomialToFunc (coeffs) {
     return function(x){   
         var Result = coeffs[coeffs.length-1];
-        for(let i=coeffs.length - 2 ;i>=0; i--){
+        for(var i=coeffs.length - 2 ;i>=0; i--){
             Result = coeffs[i] + x * Result;
         }
         return Result;
     }
-};
+}
 
-var polynomialToCode = function(coeffs){
+function polynomialToCode(coeffs){
     var Result = coeffs[coeffs.length-1].toString();
-    for(let i=coeffs.length - 2 ;i>=0; i--){
+    for(var i=coeffs.length - 2 ;i>=0; i--){
         Result = coeffs[i].toString() + " + x*(" + Result + ")";
     }
     Result = "y = " + Result;
@@ -128,31 +128,31 @@ var polynomialToCode = function(coeffs){
  *
  * @returns Array coefficients of polynomial
  */
-var leastSquaresPolynomial = function (points, degree) {
-  let total = points.length,
+function leastSquaresPolynomial(points, degree) {
+  var total = points.length,
     tmp = 0;
 
-  let matrix = new Array(degree),
+  var matrix = new Array(degree),
     freeTerm = [];
-  for (let j = 1; j <= degree; j++) {
+  for (var j = 1; j <= degree; j++) {
     matrix[j - 1] = [];
-    for (let i = 1; i <= degree; i++) {
+    for (var i = 1; i <= degree; i++) {
       tmp = 0;
-      for (let l = 1; l < total; l++) {
+      for (var l = 1; l < total; l++) {
         tmp += Math.pow(points[l][0], i + j - 2);
       }
       matrix[j - 1].push(tmp);
     }
 
     tmp = 0;
-    for (let l = 1; l < total; l++) {
+    for (var l = 1; l < total; l++) {
       tmp += points[l][1] * Math.pow(points[l][0], j - 1);
     }
     freeTerm.push(tmp);
   }
 
   return gauss(matrix, freeTerm);
-};
+}
 
 /**
  * Remez approximation algorithm - https://en.wikipedia.org/wiki/Remez_algorithm
@@ -161,13 +161,12 @@ var leastSquaresPolynomial = function (points, degree) {
  *
  * @returns Array coefficients of polynomial
  */
-var remezPolynomial = function (points, origFunc) {
-    // todo: add point changing and iterations?
-    let total = points.length;
-    let degree = total - 2;
-    let freeTerm = points.map(point => point[1]);
+function remezPolynomial (points, origFunc) {
+    var total = points.length;
+    var degree = total - 2;
+    var freeTerm = points.map(point => point[1]);
 
-    let matrix = points.map((point, index) =>
+    var matrix = points.map((point, index) =>
         range(degree + 2)
           .map(i =>
             (degree - i >= 0) ? Math.pow(point[0], degree - i) : Math.pow(-1, index)
@@ -175,33 +174,22 @@ var remezPolynomial = function (points, origFunc) {
     );
 
     // Get the tentative polynomial coefficients
-    let coeffs = gauss(matrix, freeTerm).slice(0, -1).reverse();
-
-    /*
-    // Check errors in generated coefficients
-    let ResultFunc = polynomialToFunc(coeffs);
-    let errors = new Array(total);
-    for(let i=0;i<total; i++){
-        errors[i] = origFunc(points[i][0]) - ResultFunc(points[i][0]);
-    } 
-    console.log(errors);
-    */
-
+    var coeffs = gauss(matrix, freeTerm).slice(0, -1).reverse();
     return coeffs;
-};
+}
 
 function PaintAbsError(canvas, intervalS, intervalE, origF, approxF){
     var ctx = canvas.getContext('2d');
 
-    let pointCnt = canvas.width;
-    let points = new Array(pointCnt);
-    let maxErr = Number.MIN_VALUE;
+    var pointCnt = canvas.width;
+    var points = new Array(pointCnt);
+    var maxErr = Number.MIN_VALUE;
 
-    for(let i=0; i<pointCnt;i++){
-        let x = intervalS + i/(pointCnt-1) * (intervalE-intervalS);
-        let y0 = origF(x);
-        let y1 = approxF(x);
-        let err = Math.abs(y1 - y0);
+    for(var i=0; i<pointCnt;i++){
+        var x = intervalS + i/(pointCnt-1) * (intervalE-intervalS);
+        var y0 = origF(x);
+        var y1 = approxF(x);
+        var err = Math.abs(y1 - y0);
         maxErr = Math.max(maxErr, err);
         points[i] = err;
     }
@@ -209,7 +197,7 @@ function PaintAbsError(canvas, intervalS, intervalE, origF, approxF){
     maxErr *= 1.1;
 
     // Map points to canvas coords
-    for(let i=0;i<pointCnt;i++){
+    for(var i=0;i<pointCnt;i++){
         points[i] = points[i] / maxErr  * canvas.height;
     }
 
@@ -218,7 +206,7 @@ function PaintAbsError(canvas, intervalS, intervalE, origF, approxF){
 
     ctx.strokeStyle = "#0F0";
     ctx.beginPath();
-    for(let i=0;i<pointCnt;i++){
+    for(var i=0;i<pointCnt;i++){
         ctx.lineTo(i, canvas.height - points[i]);
     }
     ctx.stroke();
@@ -227,33 +215,33 @@ function PaintAbsError(canvas, intervalS, intervalE, origF, approxF){
 function PaintFunctions(canvas, intervalS, intervalE, origF, approxF){
     var ctx = canvas.getContext('2d');
 
-    let pointCnt = canvas.width;
-    let points = new Array(pointCnt);
-    let minY = Number.MAX_VALUE;
-    let maxY = -Number.MAX_VALUE;
+    var pointCnt = canvas.width;
+    var points = new Array(pointCnt);
+    var minY = Number.MAX_VALUE;
+    var maxY = -Number.MAX_VALUE;
 
-    for(let i=0; i<pointCnt;i++){
-        let x = intervalS + i/(pointCnt-1) * (intervalE-intervalS);
-        let y0 = origF(x);
-        let y1 = approxF(x);
+    for(var i=0; i<pointCnt;i++){
+        var x = intervalS + i/(pointCnt-1) * (intervalE-intervalS);
+        var y0 = origF(x);
+        var y1 = approxF(x);
         minY = Math.min(minY, y0, y1);
         maxY = Math.max(maxY, y0, y1);
         points[i] = {x:x, y0:y0, y1:y1};
     }
 
-    let dist = maxY - minY;
+    var dist = maxY - minY;
 
     maxY += dist * 0.1;
     minY -= dist * 0.1;
 
     // Map points to canvas coords
-    let canvasPoints = new Array(pointCnt);
-    for(let i=0;i<pointCnt;i++){
-        let y0 = points[i].y0;
-        let y1 = points[i].y1;
+    var canvasPoints = new Array(pointCnt);
+    for(var i=0;i<pointCnt;i++){
+        var y0 = points[i].y0;
+        var y1 = points[i].y1;
 
-        let cy0 = (y0 - minY) / (maxY - minY) * canvas.height;
-        let cy1 = (y1 - minY) / (maxY - minY) * canvas.height;
+        var cy0 = (y0 - minY) / (maxY - minY) * canvas.height;
+        var cy1 = (y1 - minY) / (maxY - minY) * canvas.height;
         canvasPoints[i] = [cy0, cy1];
     }
 
@@ -262,79 +250,79 @@ function PaintFunctions(canvas, intervalS, intervalE, origF, approxF){
 
     ctx.strokeStyle = "#ccc";
     ctx.beginPath();
-    let cy_0 = canvas.height - (0-minY / (maxY-minY) * canvas.height);
+    var cy_0 = canvas.height - (0-minY / (maxY-minY) * canvas.height);
     ctx.moveTo(0, cy_0);
     ctx.lineTo(canvas.width, cy_0);
     ctx.stroke();
 
     ctx.strokeStyle = "#0F0";
     ctx.beginPath();
-    for(let i=0;i<pointCnt;i++){
+    for(var i=0;i<pointCnt;i++){
         ctx.lineTo(i, canvas.height - canvasPoints[i][0]);
     }
     ctx.stroke();
     ctx.strokeStyle = "#F00";
     ctx.beginPath();
-    for(let i=0;i<pointCnt;i++){
+    for(var i=0;i<pointCnt;i++){
         ctx.lineTo(i, canvas.height - canvasPoints[i][1]);
     }
     ctx.stroke();
 }
 
 function CalculateErrorValues(form, start, end, f1, f2){
-    let maxErr = 0;
-    let maxRelErr = 1;
-    let iters = 50000; 
-    for(let i=0;i<iters ;i++){
-        let x = start + (end-start) * i / (iters-1);
-        let err = Math.abs(f1(x) - f2(x));
+    var maxErr = 0;
+    var maxRelErr = 1;
+    var iters = 50000; 
+    for(var i=0;i<iters ;i++){
+        var x = start + (end-start) * i / (iters-1);
+        var err = Math.abs(f1(x) - f2(x));
         maxErr = Math.max(maxErr, err);
     }
     form.AbsErr.value = maxErr;
 }
 
 function GetCoeffs(){
-    let Result = [];
-    let elems = document.getElementsByClassName("coefficient");
-    for(let i=0;i<elems.length;i++){
-        let v = elems[i].value;
+    var Result = [];
+    var elems = document.getElementsByClassName("coefficient");
+    for(var i=0;i<elems.length;i++){
+        var v = elems[i].value;
         if(v == ""){
             v= '0';
         }
-        let f = parseFloat(v)
+        var f = parseFloat(v)
         Result.push(f);
     }
     return Result;
 }
 
 function RedrawAll(){
-    let form = document.forms[0];
-    let start = parseFloat(form.iStart.value);
-    let end = parseFloat(form.iEnd.value);
-    let expr = form.Expr.value;
+    var form = document.forms[0];
+    var start = parseFloat(form.iStart.value);
+    var end = parseFloat(form.iEnd.value);
+    var expr = form.Expr.value;
 
     var evalFunc = EvaluateInScope(expr);
 
-    let Coeffs = GetCoeffs();
+    var Coeffs = GetCoeffs();
     form.Output.value = polynomialToCode(Coeffs);
 
-    let ResultFunc = polynomialToFunc(Coeffs);
-    let canvas= document.getElementById("mainCanvas");
+    var ResultFunc = polynomialToFunc(Coeffs);
+    var canvas= document.getElementById("mainCanvas");
     PaintFunctions(canvas, start, end, evalFunc, ResultFunc);
-    let errCanvas = document.getElementById("errCanvas");
+    var errCanvas = document.getElementById("errCanvas");
     PaintAbsError(errCanvas, start, end, evalFunc, ResultFunc);
     CalculateErrorValues(form, start, end, evalFunc, ResultFunc);
 }
 
 function DegreesChanged(newValue){
-    let CoeffsDiv = document.getElementById("Coefficients");
+    var CoeffsDiv = document.getElementById("Coefficients");
     CoeffsDiv.innerHTML = '';
-    for(let i=0;i<=newValue;i++){
-        let l = document.createElement("label");
+    for(var i=0;i<=newValue;i++){
+        var l = document.createElement("label");
         l.innerHTML = "<br/>Degree " + i + "&nbsp;";
         CoeffsDiv.appendChild(l);
 
-        let d = document.createElement("input");
+        var d = document.createElement("input");
         d.type = "text";
         d.id = "Coeff_" + i;
         d.className = "coefficient";
@@ -345,19 +333,78 @@ function DegreesChanged(newValue){
 
 
 function CalculateFormRemez(){
-    let form = document.forms[0];
-    let start = parseFloat(form.iStart.value);
-    let end = parseFloat(form.iEnd.value);
-    let degrees = parseInt(form.Degrees.value);
-    let expr = form.Expr.value;
+    // Clear error messages
+    document.getElementById("warning").innerHTML = "";
+
+    var form = document.forms[0];
+    var start = parseFloat(form.iStart.value);
+    var end = parseFloat(form.iEnd.value);
+    var degrees = parseInt(form.Degrees.value);
+    var expr = form.Expr.value;
     
     DegreesChanged(degrees);
     var evalFunc = EvaluateInScope(expr);
+    var initialPoints = GetRemezPoints(evalFunc, start, end, degrees);
+    var ResultCoeffs;
 
-    let ResultCoeffs = remezPolynomial(GetRemezPoints(evalFunc, start, end, degrees), evalFunc);
+    var maxRetries = 10;
+    var retryCnt = 0;
+    for(var retryCnt = 0; retryCnt < maxRetries; retryCnt++){
+        ResultCoeffs = remezPolynomial(initialPoints, evalFunc);
+        // If we reach NaNs, break out
+        if(!ResultCoeffs.every(x=>!isNaN(x))){
+            break;
+        }
+
+        // Find points with biggest absolute error
+        var M=[];
+
+        var newf = polynomialToFunc(ResultCoeffs);
+        var errorf = function(x){ return Math.abs(evalFunc(x) - newf(x)); };
+        //var errorf = function(x){ return Math.abs(evalFunc(x) - newf(x)) / Math.abs(evalFunc(x)); };
+        
+        var rangeSplits = 50000;
+        var epsilon = (end-start) / rangeSplits;
+
+        // TODO - improve this with a couple rounds of root-finding using Newton's, 
+        // instead of just brute-forcing over the range and keeping the found values
+        for(var i=0;i<rangeSplits;i++){
+            var p=start + (end-start) * i / rangeSplits;
+            var fp = errorf(p);
+            if(fp >= errorf(p-epsilon) && fp > errorf(p+epsilon)){
+                M.push(p);
+            }
+        }
+
+        var totalError = 0;
+        for(var i=1; i < M.length ;i++){
+            totalError += Math.abs(M[0] - M[i]);
+        }
+        
+        if(M.length == initialPoints.length-2){
+            M.unshift(start);
+            M.push(end);
+        }       
+        if(M.length == initialPoints.length-1){
+            M.push(end);
+        } 
+
+        if(M.length != initialPoints.length){
+            document.getElementById("warning").innerHTML = "ERROR: Could not find maximum error points for next iteration";
+            //ResultCoeffs = initialPoints.map(b=>b[0]);
+            break;
+        }
+
+
+        for(var i=0;i<M.length;i++){
+            initialPoints[i] = [M[i], evalFunc(M[i])];
+        }
+        retryCnt++;
+    }
+
     // Display coefficients in form
-    for(let i=0;i<ResultCoeffs.length;i++){
-        let t = document.getElementById("Coeff_" + i);
+    for(var i=0;i<ResultCoeffs.length;i++){
+        var t = document.getElementById("Coeff_" + i);
         t.value = ResultCoeffs[i];
     }
     RedrawAll();
