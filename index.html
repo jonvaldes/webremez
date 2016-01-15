@@ -1,4 +1,7 @@
-<html><head><script src="remez.js"></script></head><body>
+<html><head>
+  <script src="hsd-flotr2.js"></script>
+  <script src="remez.js"></script>
+  </head><body>
   <div style="float:left; margin-left:2em;">
   <h2> Remez algorithm </h2>
   <form method="post"> 
@@ -24,8 +27,10 @@
   <div style="float:left; top:0; margin-left:2em;">
     <h3>Graphs</h3>
   <p>Functions (green:original, red:approximation)</p>
-  <canvas id="mainCanvas" width=600 height=300></canvas>
+  <div style="height:410px;overflow:hidden;">
+    <div id="functiongraph" style="width:1200px;height:600px;transform:matrix(0.5,0,0,0.5,-300,-90);"></div>
+  </div>
   <p>Absolute error</p>
-  <canvas id="errCanvas" width=600 height=300></canvas>
+  <div id="errorgraph" style="width:600px;height:300px;"></div>
   </div>
 </body></html>

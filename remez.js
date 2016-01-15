@@ -179,94 +179,54 @@ function remezPolynomial (points, origFunc) {
 }
 
 function PaintAbsError(canvas, intervalS, intervalE, origF, approxF){
-    var ctx = canvas.getContext('2d');
 
-    var pointCnt = canvas.width;
+    var pointCnt = 600;
     var points = new Array(pointCnt);
-    var maxErr = Number.MIN_VALUE;
 
     for(var i=0; i<pointCnt;i++){
         var x = intervalS + i/(pointCnt-1) * (intervalE-intervalS);
         var y0 = origF(x);
         var y1 = approxF(x);
         var err = Math.abs(y1 - y0);
-        maxErr = Math.max(maxErr, err);
-        points[i] = err;
+        points[i] = [x,err];
     }
 
-    maxErr *= 1.1;
-
-    // Map points to canvas coords
-    for(var i=0;i<pointCnt;i++){
-        points[i] = points[i] / maxErr  * canvas.height;
-    }
-
-    ctx.fillStyle = "#eee";
-    ctx.fillRect(0,0,canvas.width, canvas.height);
-
-    ctx.strokeStyle = "#0F0";
-    ctx.beginPath();
-    for(var i=0;i<pointCnt;i++){
-        ctx.lineTo(i, canvas.height - points[i]);
-    }
-    ctx.stroke();
+    // Draw Graph
+    var graph = Flotr.draw(document.getElementById("errorgraph"), [ points ], {
+      xaxis: {
+      }, 
+      grid: {
+        minorVerticalLines: true,
+        minorHorizontalLines: true
+      }
+    });
 }
 
 function PaintFunctions(canvas, intervalS, intervalE, origF, approxF){
-    var ctx = canvas.getContext('2d');
 
-    var pointCnt = canvas.width;
-    var points = new Array(pointCnt);
-    var minY = Number.MAX_VALUE;
-    var maxY = -Number.MAX_VALUE;
+    var pointCnt = 600;
+    var points1 = new Array(pointCnt);
+    var points2 = new Array(pointCnt);
+
 
     for(var i=0; i<pointCnt;i++){
         var x = intervalS + i/(pointCnt-1) * (intervalE-intervalS);
-        var y0 = origF(x);
-        var y1 = approxF(x);
-        minY = Math.min(minY, y0, y1);
-        maxY = Math.max(maxY, y0, y1);
-        points[i] = {x:x, y0:y0, y1:y1};
+        points1[i] = [x,origF(x)];
+        points2[i] = [x,approxF(x)];
     }
 
-    var dist = maxY - minY;
+    // Draw Graph
+    var graph = Flotr.draw(document.getElementById("functiongraph"), [ points1, points2 ], {
+      colors:["#0F0", "#F00"],
+      shadowSize:0,
+      xaxis: {
+      }, 
+      grid: {
+        minorVerticalLines: true,
+        minorHorizontalLines: true
+      }
+    });
 
-    maxY += dist * 0.1;
-    minY -= dist * 0.1;
-
-    // Map points to canvas coords
-    var canvasPoints = new Array(pointCnt);
-    for(var i=0;i<pointCnt;i++){
-        var y0 = points[i].y0;
-        var y1 = points[i].y1;
-
-        var cy0 = (y0 - minY) / (maxY - minY) * canvas.height;
-        var cy1 = (y1 - minY) / (maxY - minY) * canvas.height;
-        canvasPoints[i] = [cy0, cy1];
-    }
-
-    ctx.fillStyle = "#eee";
-    ctx.fillRect(0,0,canvas.width, canvas.height);
-
-    ctx.strokeStyle = "#ccc";
-    ctx.beginPath();
-    var cy_0 = canvas.height - (0-minY / (maxY-minY) * canvas.height);
-    ctx.moveTo(0, cy_0);
-    ctx.lineTo(canvas.width, cy_0);
-    ctx.stroke();
-
-    ctx.strokeStyle = "#0F0";
-    ctx.beginPath();
-    for(var i=0;i<pointCnt;i++){
-        ctx.lineTo(i, canvas.height - canvasPoints[i][0]);
-    }
-    ctx.stroke();
-    ctx.strokeStyle = "#F00";
-    ctx.beginPath();
-    for(var i=0;i<pointCnt;i++){
-        ctx.lineTo(i, canvas.height - canvasPoints[i][1]);
-    }
-    ctx.stroke();
 }
 
 function CalculateErrorValues(form, start, end, f1, f2){
